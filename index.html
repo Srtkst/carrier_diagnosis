@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>モバイルキャリア診断</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📱 モバイルキャリア診断</h1>
+            <p>あなたにぴったりの通信プランをご提案します</p>
+        </header>
+
+        <main id="app">
+            <!-- 診断開始画面 -->
+            <div id="start-screen" class="card fade-in">
+                <h2>いくつかの質問に答えるだけで、<br>最適なプランがわかります。</h2>
+                <div class="visual-icon">🔍</div>
+                <div class="start-btns">
+                    <button id="start-btn" class="btn btn-primary">診断を始める</button>
+                    <button id="show-list-btn" class="btn btn-outline">料金プラン一覧を見る</button>
+                </div>
+            </div>
+
+            <!-- キャリア一覧画面 -->
+            <div id="carrier-list-screen" class="fade-in hidden">
+                <div class="list-header">
+                    <button id="back-from-list" class="btn-back">← 戻る</button>
+                    <h2>主要キャリア料金・特徴一覧</h2>
+                </div>
+                <div id="carrier-list-container" class="carrier-list-grid"></div>
+            </div>
+
+            <!-- 質問画面 (動的に生成) -->
+            <div id="question-container" class="card fade-in hidden">
+                <div class="progress-bar">
+                    <div id="progress" class="progress-fill"></div>
+                </div>
+                <div id="question-content">
+                    <h3 id="question-title">質問タイトル</h3>
+                    <div id="options-container" class="options-grid"></div>
+                </div>
+                <div class="nav-btns">
+                    <button id="prev-btn" class="btn btn-outline">戻る</button>
+                    <button id="home-btn" class="btn btn-text">最初に戻る</button>
+                </div>
+            </div>
+
+            <!-- 結果画面 -->
+            <div id="result-screen" class="fade-in hidden">
+                <div class="result-grid">
+                    <!-- 結果カード1: 料金 -->
+                    <div class="result-card price-card">
+                        <div class="card-header-v2">💰 月額料金を重視するなら</div>
+                        <div class="card-content" id="result-price">
+                            <div class="carrier-name">---</div>
+                            <ul class="features"></ul>
+                        </div>
+                    </div>
+                    <!-- 結果カード2: 品質 -->
+                    <div class="result-card quality-card">
+                        <div class="card-header-v2">🚀 通信品質を重視するなら</div>
+                        <div class="card-content" id="result-quality">
+                            <div class="carrier-name">---</div>
+                            <ul class="features"></ul>
+                        </div>
+                    </div>
+                    <!-- 結果カード3: サービス -->
+                    <div class="result-card service-card">
+                        <div class="card-header-v2">🎁 付帯サービスを重視するなら</div>
+                        <div class="card-content" id="result-service">
+                            <div class="carrier-name">---</div>
+                            <ul class="features"></ul>
+                        </div>
+                    </div>
+                    <!-- 結果カード4: 誘導 -->
+                    <div class="result-card cta-card">
+                        <div class="card-content cta-content">
+                            <p>結果を保存して持ち帰る</p>
+                            <button id="gen-cert-btn" class="btn btn-primary" style="background: white; color: #764ba2; margin-bottom: 15px;">📸 撮影用カードを表示</button>
+                            <p class="small-text">カメラで撮影して保存できます</p>
+                            <button class="btn btn-text" style="color: white; margin-top: 5px;" onclick="location.reload()">最初からやり直す</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- モーダル: 撮影用診断書 -->
+        <div id="capture-modal" class="modal hidden">
+            <div class="modal-content">
+                <span id="close-modal" class="close">&times;</span>
+                <p class="modal-hint">👇 こちらをスマホのカメラで撮影してください</p>
+                <div id="certificate-target" class="certificate-card">
+                    <div class="cert-header">
+                        <div class="cert-logo">📱 Career Diagnosis</div>
+                        <div class="cert-date" id="cert-date"></div>
+                    </div>
+                    <div class="cert-body">
+                        <div id="cert-user-name" class="cert-user-name"></div>
+                        <h2>モバイルキャリア診断書</h2>
+                        <div id="cert-results"></div>
+                        <div class="cert-footer">
+                            <p>※概算料金は割引適用後の目安です。<br>最新のキャンペーンや詳細は店舗スタッフまで。</p>
+                            <div class="cert-creator">Produced by kishita Sorato</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-btns">
+                    <button class="btn btn-outline" id="download-img-btn">画像として保存 (タブレット用)</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>&copy; 2026 モバイルキャリア診断</p>
+            <p class="creator-credit">Developed by kishita Sorato</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

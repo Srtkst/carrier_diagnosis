@@ -1,0 +1,131 @@
+{
+    "questions": [
+        {
+            "id": "userName",
+            "title": "お客様のお名前を入力してください（任意）",
+            "type": "text",
+            "placeholder": "例：キャリア 太郎",
+            "options": []
+        },
+        {
+            "id": "contractType",
+            "title": "契約種別を選択してください",
+            "type": "select",
+            "options": [
+                "新規",
+                "機種変更",
+                "MNP",
+                "機種変更＋MNP"
+            ]
+        },
+        {
+            "id": "lineCount",
+            "title": "キャリア変更を検討している回線数を選択してください",
+            "titleForNew": "新しく契約を検討している回線数を選択してください",
+            "type": "select",
+            "options": [
+                "1回線",
+                "2回線",
+                "3回線",
+                "4回線",
+                "5回線以上"
+            ]
+        },
+        {
+            "id": "currentCarrier",
+            "title": "現在利用しているキャリアを選択してください",
+            "type": "select",
+            "showIf": {
+                "contractType": [
+                    "機種変更",
+                    "MNP",
+                    "機種変更＋MNP"
+                ]
+            },
+            "options": [
+                "docomo",
+                "ahamo",
+                "au",
+                "UQ mobile",
+                "SoftBank",
+                "Y!mobile",
+                "その他"
+            ]
+        },
+        {
+            "id": "monthlyData",
+            "title": "毎月のデータ通信量を選択してください",
+            "titleForNew": "毎月どれくらいのデータ通信を使いたいですか？",
+            "type": "select",
+            "options": [
+                "1GB未満",
+                "1～3GB",
+                "3～10GB",
+                "10～20GB",
+                "20～30GB",
+                "30GB以上",
+                "わからない"
+            ]
+        },
+        {
+            "id": "homeInternet",
+            "title": "利用している固定回線を選択してください",
+            "type": "select",
+            "options": [
+                "@nifty光",
+                "docomo光",
+                "SoftBank光",
+                "auひかり",
+                "その他",
+                "利用していない"
+            ]
+        },
+        {
+            "id": "familyLines",
+            "title": "家族で同じキャリアを利用している回線数を選択してください",
+            "titleForNew": "ご家族で一緒に契約される予定の回線数を選択してください",
+            "type": "select",
+            "options": [
+                "1回線",
+                "2回線",
+                "3回線",
+                "4回線",
+                "5回線以上"
+            ]
+        },
+        {
+            "id": "creditCard",
+            "title": "お持ちのクレジットカードを選択してください",
+            "titleForNew": "お支払い等で利用予定のクレジットカードを選択してください",
+            "type": "select",
+            "options": [
+                "dカード",
+                "au PAYカード",
+                "PayPayカード",
+                "PayPayカード Gold",
+                "その他・持っていない"
+            ]
+        },
+        {
+            "id": "supportNeed",
+            "title": "店舗サポートの必要度を選択してください",
+            "type": "radio",
+            "options": [
+                "必須",
+                "できれば欲しい",
+                "不要"
+            ]
+        },
+        {
+            "id": "callUsage",
+            "title": "電話の利用頻度を選択してください",
+            "type": "radio",
+            "options": [
+                "ほとんど利用しない",
+                "月10分未満",
+                "月60分程度",
+                "かけ放題が必要"
+            ]
+        }
+    ]
+}

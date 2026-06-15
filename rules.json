@@ -1,0 +1,78 @@
+{
+  "docomo": {
+    "family": {
+      "name": "みんなドコモ割",
+      "values": { "1回線": 0, "2回線": 550, "3回線以上": 1100 }
+    },
+    "fixedLine": {
+      "name": "ドコモ光セット割",
+      "value": 1100,
+      "requires": ["docomo光"]
+    },
+    "card": {
+      "name": "dカードお支払割",
+      "value": 187
+    }
+  },
+  "au": {
+    "family": {
+      "name": "家族割プラス",
+      "values": { "1回線": 0, "2回線": 550, "3回線以上": 1210 }
+    },
+    "fixedLine": {
+      "name": "auスマートバリュー",
+      "value": 1100,
+      "requires": ["auひかり", "@nifty光"]
+    },
+    "card": {
+      "name": "au PAYカードお支払い割",
+      "value": 220
+    }
+  },
+  "SoftBank": {
+    "family": {
+      "name": "新みんな家族割",
+      "values": { "1回線": 0, "2回線": 660, "3回線以上": 1210 }
+    },
+    "fixedLine": {
+      "name": "おうち割光セット",
+      "value": 1100,
+      "requires": ["SoftBank光"]
+    },
+    "card": {
+      "name": "PayPayカード割",
+      "value": 187
+    }
+  },
+  "Ymobile": {
+    "fixedLine": {
+      "name": "おうち割光セット(A)",
+      "value": 1650,
+      "requires": ["SoftBank光"]
+    },
+    "card": {
+      "name": "PayPayカード割(Gold)",
+      "value": 770
+    }
+  },
+  "UQ_mobile": {
+    "fixedLine": {
+      "name": "自宅セット割",
+      "value": 1100,
+      "requires": ["auひかり", "@nifty光"]
+    },
+    "family": {
+      "name": "家族セット割",
+      "value": 550,
+      "values": { "1回線": 0, "2回線以上": 550 }
+    },
+    "card": {
+      "name": "au PAYカードお支払い割",
+      "value": 220
+    },
+    "uq_5gb_special": {
+      "name": "5GB以下利用割",
+      "value": 1100
+    }
+  }
+}
