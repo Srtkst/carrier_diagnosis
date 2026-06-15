@@ -472,6 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     closeModal.onclick = () => captureModal.classList.add('hidden');
+    document.getElementById('close-modal-btn').onclick = () => captureModal.classList.add('hidden');
     window.onclick = (e) => { if (e.target == captureModal) captureModal.classList.add('hidden'); };
 
     downloadImgBtn.onclick = () => {
