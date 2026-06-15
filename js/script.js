@@ -30,6 +30,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const certUserName = document.getElementById('cert-user-name');
     const downloadImgBtn = document.getElementById('download-img-btn');
 
+    // Fullscreen Toggle
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error(`全画面表示の有効化に失敗しました: ${err.message}`);
+            });
+            fullscreenBtn.textContent = '📺 元に戻す';
+        } else {
+            document.exitFullscreen();
+            fullscreenBtn.textContent = '📺 全画面';
+        }
+    });
+
     const answerSummary = document.getElementById('answer-summary');
     const certAnswers = document.getElementById('cert-answers');
 

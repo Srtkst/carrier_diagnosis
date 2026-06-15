@@ -27,6 +27,94 @@
     --base-font-size: 20px;
 }
 
+/* Fullscreen Toggle Button */
+.fullscreen-toggle {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 1001;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    border: 2px solid var(--primary-color);
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(118, 75, 162, 0.2);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.fullscreen-toggle:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: scale(1.05);
+}
+
+@media (max-width: 1100px) {
+    :root {
+        --base-font-size: 18px;
+    }
+    header h1 {
+        font-size: 3rem;
+    }
+    .card {
+        padding: 50px 30px;
+    }
+}
+
+@media (max-width: 850px) {
+    :root {
+        --base-font-size: 17px;
+    }
+    header h1 {
+        font-size: 2.5rem;
+    }
+    header {
+        margin-bottom: 30px;
+    }
+    .visual-icon {
+        font-size: 7rem;
+        margin-bottom: 30px;
+    }
+    .card {
+        padding: 40px 25px;
+    }
+    .btn {
+        padding: 20px 45px;
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 600px) {
+    :root {
+        --base-font-size: 16px;
+    }
+    body {
+        padding: 20px 15px;
+    }
+    header h1 {
+        font-size: 2rem;
+    }
+    .visual-icon {
+        font-size: 5rem;
+    }
+    .btn {
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    .fullscreen-toggle {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
