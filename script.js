@@ -54,15 +54,24 @@ document.addEventListener('DOMContentLoaded', () => {
         carrierListContainer.innerHTML = '';
         for (const [key, plans] of Object.entries(plansData)) {
             const item = document.createElement('div');
-            item.className = 'list-item fade-in';
+            // carrier-docomo, carrier-au, etc.
+            item.className = `list-item carrier-${key} fade-in`;
             
             let planHtml = '';
             for (const [pName, pInfo] of Object.entries(plans)) {
                 if (pInfo.tiers) {
                     const maxTier = pInfo.tiers[pInfo.tiers.length - 1];
-                    planHtml += `<div class="price-item"><span class="price-label">${pName}</span><span class="price-value">${maxTier.price.toLocaleString()}円〜</span></div>`;
+                    planHtml += `
+                        <div class="price-item">
+                            <span class="price-label">${pName}</span>
+                            <span class="price-value">${maxTier.price.toLocaleString()}円〜</span>
+                        </div>`;
                 } else {
-                    planHtml += `<div class="price-item"><span class="price-label">${pName}</span><span class="price-value">${pInfo.price.toLocaleString()}円</span></div>`;
+                    planHtml += `
+                        <div class="price-item">
+                            <span class="price-label">${pName}</span>
+                            <span class="price-value">${pInfo.price.toLocaleString()}円</span>
+                        </div>`;
                 }
             }
 
@@ -78,13 +87,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             item.innerHTML = `
                 <h3>${key.replace('_', ' ')}</h3>
-                <div class="price-section">
-                    <h4>基本料金（割引前最大）</h4>
-                    ${planHtml}
-                </div>
-                <div class="discount-tag-list">
-                    <h4>適用可能な割引例</h4>
-                    ${discountHtml}
+                <div class="list-item-content">
+                    <div class="price-section">
+                        <h4>💰 基本料金（最大）</h4>
+                        ${planHtml}
+                    </div>
+                    <div class="discount-tag-list">
+                        <h4>✨ 適用可能な割引</h4>
+                        ${discountHtml}
+                    </div>
                 </div>
             `;
             carrierListContainer.appendChild(item);
@@ -212,11 +223,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             for (const [planName, planInfo] of Object.entries(plans)) {
                 let basePrice = 0;
+                // データ容量チェック
+                if (planInfo.type === 'tiered' || planInfo.type === 'flat') {
+                    const maxData = planInfo.data || (planInfo.tiers ? planInfo.tiers[planInfo.tiers.length - 1].upTo : 0);
+                    if (userGB > maxData) continue; // 容量不足なら除外
+                }
+
                 if (planInfo.tiers) {
-                    const tier = planInfo.tiers.find(t => userGB <= t.upTo) || planInfo.tiers[planInfo.tiers.length - 1];
+                    const tier = planInfo.tiers.find(t => userGB <= t.upTo);
+                    if (!tier) continue; // 容量オーバー（念のため）
                     basePrice = tier.price;
                 } else {
-                    if (userGB > planInfo.data) continue;
                     basePrice = planInfo.price;
                 }
 
@@ -246,16 +263,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const finalFee = basePrice - totalDiscount;
-                if (finalFee < lowestFee) {
-                    lowestFee = finalFee;
+
+                // 判定ロジック：
+                // 1. 基本は一番安いプラン。
+                // 2. ただし、無制限プラン(unlimited)がある場合、30GB以上ならそれを優先する傾向をつける
+                let score = finalFee;
+                if (userGB >= 30 && planInfo.type === 'unlimited') {
+                    score -= 500; // 無制限プランを少し有利に判定（実料金は変えない）
+                }
+
+                if (!bestPlanForCarrier || score < bestPlanForCarrier.score) {
                     bestPlanForCarrier = { 
                         name: planName, 
                         fee: finalFee, 
+                        score: score,
                         features: planInfo.features || [],
                         campaignNotes: planInfo.campaignNotes || []
                     };
                 }
             }
+
             if (bestPlanForCarrier) calculatedResults[carrierKey] = bestPlanForCarrier;
         }
 
