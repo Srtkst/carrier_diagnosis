@@ -55,63 +55,77 @@
     transform: scale(1.05);
 }
 
+/* CSS Full-Window Class */
+.is-full-window {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    overflow-y: auto;
+    background: var(--bg-soft);
+    padding: 20px 10px;
+}
+.is-full-window .container {
+    max-width: 100%;
+}
+
 @media (max-width: 1100px) {
     :root {
         --base-font-size: 18px;
     }
     header h1 {
-        font-size: 3rem;
+        font-size: 2.5rem;
     }
     .card {
-        padding: 50px 30px;
+        padding: 40px 20px;
     }
 }
 
 @media (max-width: 850px) {
     :root {
-        --base-font-size: 17px;
+        --base-font-size: 16px;
     }
     header h1 {
-        font-size: 2.5rem;
+        font-size: 2rem;
     }
     header {
-        margin-bottom: 30px;
+        margin-bottom: 20px;
     }
     .visual-icon {
-        font-size: 7rem;
-        margin-bottom: 30px;
+        font-size: 5rem;
+        margin-bottom: 20px;
     }
     .card {
-        padding: 40px 25px;
+        padding: 30px 15px;
     }
     .btn {
-        padding: 20px 45px;
-        font-size: 1.3rem;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+    }
+    /* Tablets result screen tweak */
+    .result-grid {
+        grid-template-columns: 1fr;
+    }
+    .staff-card {
+        grid-column: auto;
     }
 }
 
 @media (max-width: 600px) {
     :root {
-        --base-font-size: 16px;
+        --base-font-size: 14px;
     }
     body {
-        padding: 20px 15px;
+        padding: 10px 5px;
     }
     header h1 {
-        font-size: 2rem;
-    }
-    .visual-icon {
-        font-size: 5rem;
+        font-size: 1.8rem;
     }
     .btn {
-        padding: 15px 30px;
-        font-size: 1.1rem;
-        width: 100%;
-        margin-bottom: 10px;
-    }
-    .fullscreen-toggle {
-        padding: 6px 12px;
-        font-size: 0.8rem;
+        padding: 12px 20px;
+        font-size: 1rem;
     }
 }
 
