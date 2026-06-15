@@ -235,6 +235,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const userGB = getGBValue(answers.monthlyData);
 
         for (const [carrierKey, plans] of Object.entries(plansData)) {
+            // MNP/機種変更系の場合、現在のキャリアは除外
+            if (
+                (answers.contractType === 'MNP' || answers.contractType === '機種変更＋MNP') &&
+                answers.currentCarrier === carrierKey
+            ) {
+                continue;
+            }
+
             let bestPlanForCarrier = null;
             let lowestFee = Infinity;
 
