@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
@@ -100,6 +100,13 @@
                             </div>
                         </div>
                     </div>
+                    <!-- 結果カード6: 選択内容のまとめ -->
+                    <div class="result-card summary-card">
+                        <div class="card-header-v2" style="background: #636e72;">📝 ご回答内容のまとめ</div>
+                        <div class="card-content">
+                            <div id="answer-summary" class="answer-summary-grid"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -117,7 +124,12 @@
                     <div class="cert-body">
                         <div id="cert-user-name" class="cert-user-name"></div>
                         <h2>モバイルキャリア診断書</h2>
+                        
                         <div id="cert-results"></div>
+
+                        <div class="cert-section-title">📝 ヒアリング内容</div>
+                        <div id="cert-answers" class="cert-answers-grid"></div>
+
                         <div class="cert-footer">
                             <p>※概算料金は割引適用後の目安です。<br>最新のキャンペーンや詳細は店舗スタッフまで。</p>
                             <div class="cert-creator">Produced by kishita Sorato</div>
@@ -135,6 +147,6 @@
             <p class="creator-credit">Developed by kishita Sorato</p>
         </footer>
     </div>
-    <script src="script.js"></script>
+    <script src="js/script.js"></script>
 </body>
 </html>

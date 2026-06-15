@@ -276,6 +276,69 @@ header p {
     height: 100%;
 }
 
+/* Summary Grid */
+.summary-card {
+    grid-column: 1 / -1; /* Span full width */
+}
+
+.answer-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.summary-item {
+    background: #f8faff;
+    padding: 10px 15px;
+    border-radius: 12px;
+    border-left: 4px solid #636e72;
+}
+
+.summary-label {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.summary-value {
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: var(--text-main);
+}
+
+/* Certificate specific summary */
+.cert-section-title {
+    font-size: 1rem;
+    font-weight: 900;
+    color: #764ba2;
+    margin: 30px 0 15px 0;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 5px;
+}
+
+.cert-answers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.cert-ans-item {
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.cert-ans-label {
+    color: #636e72;
+    font-weight: 700;
+}
+
+.cert-ans-value {
+    font-weight: 900;
+    color: #2d3436;
+}
+
 /* Progress bar */
 .progress-bar {
     height: 14px;

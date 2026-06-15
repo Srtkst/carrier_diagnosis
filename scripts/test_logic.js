@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 // Load data files
-const plansData = JSON.parse(fs.readFileSync(path.join(__dirname, 'plans.json'), 'utf8'));
-const rulesData = JSON.parse(fs.readFileSync(path.join(__dirname, 'rules.json'), 'utf8'));
+const plansData = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/plans.json'), 'utf8'));
+const rulesData = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/rules.json'), 'utf8'));
 
 // Mocking the GB logic from script.js
 function getGBValue(ans) {

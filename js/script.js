@@ -30,15 +30,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const certUserName = document.getElementById('cert-user-name');
     const downloadImgBtn = document.getElementById('download-img-btn');
 
+    const answerSummary = document.getElementById('answer-summary');
+    const certAnswers = document.getElementById('cert-answers');
+
     let lastRecs = null;
 
     // データ読み込み
     async function loadData() {
         try {
             const [qRes, pRes, rRes] = await Promise.all([
-                fetch('question.json'),
-                fetch('plans.json'),
-                fetch('rules.json')
+                fetch('data/question.json'),
+                fetch('data/plans.json'),
+                fetch('data/rules.json')
             ]);
             questions = (await qRes.json()).questions;
             plansData = await pRes.json();
@@ -244,9 +247,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         const rule = rules[dType];
                         if (!rule) return;
                         if (dType === 'family') {
-                            const count = answers.familyLines === '5回線以上' ? '3回線以上' : 
-                                         (parseInt(answers.familyLines) >= 3 ? '3回線以上' : answers.familyLines);
-                            totalDiscount += rule.values[count] || 0;
+                            const userAns = answers.familyLines;
+                            if (rule.values) {
+                                if (rule.values[userAns] !== undefined) {
+                                    totalDiscount += rule.values[userAns];
+                                } else if ((userAns === '3回線' || userAns === '4回線' || userAns === '5回線以上') && rule.values['3回線以上'] !== undefined) {
+                                    totalDiscount += rule.values['3回線以上'];
+                                } else if ((userAns !== '1回線') && rule.values['2回線以上'] !== undefined) {
+                                    totalDiscount += rule.values['2回線以上'];
+                                }
+                            } else if (rule.value) {
+                                totalDiscount += rule.value;
+                            }
                         } else if (dType === 'fixedLine') {
                             if (rule.requires.includes(answers.homeInternet)) totalDiscount += rule.value;
                         } else if (dType === 'card') {
@@ -296,6 +308,38 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCarrierResult('result-price', recommendations.price);
         renderCarrierResult('result-quality', recommendations.quality);
         renderCarrierResult('result-service', recommendations.service);
+
+        renderAnswerSummary(answerSummary, 'summary-item');
+    }
+
+    function renderAnswerSummary(container, itemClass) {
+        container.innerHTML = '';
+        activeQuestionIds.forEach(id => {
+            if (id === 'userName') return; // 名前は別出しなので除外
+            const q = questions.find(question => question.id === id);
+            const val = answers[id];
+            if (!val) return;
+
+            const item = document.createElement('div');
+            item.className = itemClass;
+            
+            const label = q.title.split('を選択')[0].split('を入力')[0]; // タイトルを簡略化
+            
+            if (itemClass === 'summary-item') {
+                item.innerHTML = `
+                    <div class="summary-label">${label}</div>
+                    <div class="summary-value">${val}</div>
+                `;
+            } else {
+                // cert-ans-item
+                item.className = 'cert-ans-item';
+                item.innerHTML = `
+                    <span class="cert-ans-label">${label}</span>
+                    <span class="cert-ans-value">${val}</span>
+                `;
+            }
+            container.appendChild(item);
+        });
     }
 
     function getGBValue(ans) {
@@ -401,6 +445,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `;
+
+        renderAnswerSummary(certAnswers, 'cert-ans-item');
+
         captureModal.classList.remove('hidden');
     });
 

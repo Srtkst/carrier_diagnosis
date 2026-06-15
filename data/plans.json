@@ -4,6 +4,7 @@
       "type": "unlimited",
       "data": 999,
       "tiers": [
+        { "upTo": 1, "price": 5698 },
         { "upTo": 3, "price": 6798 },
         { "upTo": 999, "price": 8448 }
       ],
@@ -13,86 +14,82 @@
       "type": "tiered",
       "data": 10,
       "tiers": [
-        { "upTo": 4, "price": 2365 },
-        { "upTo": 10, "price": 3565 }
+        { "upTo": 4, "price": 2750 },
+        { "upTo": 10, "price": 3850 }
       ],
       "discountEligibility": ["fixedLine", "card"]
     }
   },
   "au": {
-    "バリューリンクプラン": {
+    "auバリューリンクプラン": {
       "type": "unlimited",
       "data": 999,
       "price": 8008,
-      "discountEligibility": ["family", "fixedLine", "card"],
-      "features": ["データ使い放題", "Pontaパス込み", "au 5G Fast Lane"]
+      "discountEligibility": ["family", "fixedLine", "card"]
     },
-    "スマホミニプラン+": {
+    "スマホミニプラン": {
       "type": "tiered",
       "data": 5,
       "tiers": [
         { "upTo": 1, "price": 4928 },
-        { "upTo": 3, "price": 6578 },
+        { "upTo": 3, "price": 6758 },
         { "upTo": 5, "price": 8228 }
       ],
       "discountEligibility": ["family", "fixedLine", "card"]
     }
   },
   "SoftBank": {
-    "メリハリ無制限+": {
+    "テイガク無制限": {
       "type": "unlimited",
       "data": 999,
-      "price": 7425,
+      "price": 8008,
       "discountEligibility": ["family", "fixedLine", "card"]
     },
-    "ミニフィットプラン+": {
+    "ミニフィット2": {
       "type": "tiered",
-      "data": 3,
+      "data": 5,
       "tiers": [
-        { "upTo": 1, "price": 3278 },
-        { "upTo": 2, "price": 4378 },
-        { "upTo": 3, "price": 5478 }
+        { "upTo": 2, "price": 5258 },
+        { "upTo": 5, "price": 6358 }
       ],
       "discountEligibility": ["fixedLine", "card"]
     }
   },
-  "Ymobile": {
-    "シンプル3S": {
+  "Y!mobile": {
+    "シンプル3 S": {
       "type": "flat",
       "data": 5,
       "price": 3278,
       "discountEligibility": ["fixedLine", "card"]
     },
-    "シンプル3M": {
+    "シンプル3 M": {
       "type": "flat",
       "data": 30,
       "price": 4378,
       "discountEligibility": ["fixedLine", "card"]
     },
-    "シンプル3L": {
+    "シンプル3 L": {
       "type": "flat",
       "data": 35,
       "price": 5478,
-      "discountEligibility": ["fixedLine", "card"],
-      "features": ["10分かけ放題込み"]
+      "discountEligibility": ["fixedLine", "card"]
     }
   },
-  "UQ_mobile": {
+  "UQ mobile": {
     "トクトクプラン2": {
       "type": "tiered",
       "data": 30,
       "tiers": [
-        { "upTo": 5, "price": 2178 },
-        { "upTo": 30, "price": 3278 }
+        { "upTo": 1, "price": 2178 },
+        { "upTo": 30, "price": 4048 }
       ],
-      "discountEligibility": ["fixedLine", "card", "uq_5gb_special"]
+      "discountEligibility": ["fixedLine", "card"]
     },
-    "コミコミプランバリュー": {
+    "コミコミ": {
       "type": "flat",
       "data": 35,
       "price": 3828,
-      "discountEligibility": [],
-      "features": ["10分かけ放題込み"]
+      "discountEligibility": []
     }
   },
   "ahamo": {
