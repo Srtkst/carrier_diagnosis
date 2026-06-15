@@ -25,7 +25,7 @@
       "type": "unlimited",
       "data": 999,
       "price": 8008,
-      "discountEligibility": ["family", "fixedLine", "card"]
+      "discountEligibility": ["family", "fixedLine", "card", "upgrade"]
     },
     "スマホミニプラン": {
       "type": "tiered",
@@ -35,7 +35,7 @@
         { "upTo": 3, "price": 6758 },
         { "upTo": 5, "price": 8228 }
       ],
-      "discountEligibility": ["family", "fixedLine", "card"]
+      "discountEligibility": ["family", "fixedLine", "card", "upgrade"]
     }
   },
   "SoftBank": {
@@ -43,7 +43,7 @@
       "type": "unlimited",
       "data": 999,
       "price": 8008,
-      "discountEligibility": ["family", "fixedLine", "card"]
+      "discountEligibility": ["family", "fixedLine", "card", "upgrade"]
     },
     "ミニフィット2": {
       "type": "tiered",
@@ -52,7 +52,7 @@
         { "upTo": 2, "price": 5258 },
         { "upTo": 5, "price": 6358 }
       ],
-      "discountEligibility": ["fixedLine", "card"]
+      "discountEligibility": ["fixedLine", "card", "upgrade"]
     }
   },
   "Y!mobile": {

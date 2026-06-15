@@ -2,7 +2,7 @@
   "docomo": {
     "family": {
       "name": "みんなドコモ割",
-      "values": { "1回線": 0, "2回線": 550, "3回線以上": 1100 }
+      "values": { "1回線": 0, "2回線": 550, "3回線以上": 1210 }
     },
     "fixedLine": {
       "name": "ドコモ光セット割",
@@ -27,9 +27,15 @@
     "card": {
       "name": "au PAYカードお支払い割",
       "value": 110
+    },
+    "upgrade": {
+      "name": "UQ mobile→au移行プログラム",
+      "value": 2640,
+      "from": "UQ mobile",
+      "note": "12ヶ月間"
     }
-  },
-  "SoftBank": {
+    },
+    "SoftBank": {
     "family": {
       "name": "新みんな家族割",
       "values": { "1回線": 0, "2回線": 660, "3回線以上": 1210 }
@@ -42,12 +48,18 @@
     "card": {
       "name": "PayPayカード割",
       "value": 330
+    },
+    "upgrade": {
+      "name": "ワイモバイル→ソフトバンクのりかえ特典",
+      "value": 2420,
+      "from": "Y!mobile",
+      "note": "12ヶ月間"
     }
-  },
+    },
   "Y!mobile": {
     "fixedLine": {
       "name": "おうち割光セット(A)",
-      "value": 1100,
+      "value": 1650,
       "requires": ["SoftBank光"]
     },
     "card": {

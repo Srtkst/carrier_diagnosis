@@ -241,6 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 let totalDiscount = 0;
+                let currentPlanCampaignNotes = [];
                 const rules = rulesData[carrierKey];
                 if (rules && planInfo.discountEligibility) {
                     planInfo.discountEligibility.forEach(dType => {
@@ -268,6 +269,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ((carrierKey === 'SoftBank' || carrierKey === 'Ymobile') && card.includes('PayPayカード'))) {
                                 totalDiscount += rule.value;
                             }
+                        } else if (dType === 'upgrade') {
+                            if (answers.contractType && answers.contractType.includes('MNP') && answers.currentCarrier === rule.from) {
+                                totalDiscount += rule.value;
+                                currentPlanCampaignNotes.push(`${rule.name} (${rule.note})`);
+                            }
                         } else if (dType === 'uq_5gb_special') {
                             if (userGB <= 5) totalDiscount += rule.value;
                         }
@@ -290,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         fee: finalFee, 
                         score: score,
                         features: planInfo.features || [],
-                        campaignNotes: planInfo.campaignNotes || []
+                        campaignNotes: (planInfo.campaignNotes || []).concat(currentPlanCampaignNotes)
                     };
                 }
             }
