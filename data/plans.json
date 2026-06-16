@@ -55,7 +55,7 @@
       "discountEligibility": ["fixedLine", "card", "upgrade"]
     }
   },
-  "Y!mobile": {
+  "Ymobile": {
     "シンプル3 S": {
       "type": "flat",
       "data": 5,
@@ -75,7 +75,7 @@
       "discountEligibility": ["fixedLine", "card"]
     }
   },
-  "UQ mobile": {
+  "UQ_mobile": {
     "トクトクプラン2": {
       "type": "tiered",
       "data": 30,
