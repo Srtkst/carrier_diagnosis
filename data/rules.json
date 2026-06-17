@@ -31,7 +31,7 @@
     "upgrade": {
       "name": "UQ mobile→au移行プログラム",
       "value": 2640,
-      "from": "UQ mobile",
+      "from": "UQ_mobile",
       "note": "12ヶ月間"
     }
     },
@@ -52,11 +52,11 @@
     "upgrade": {
       "name": "ワイモバイル→ソフトバンクのりかえ特典",
       "value": 2420,
-      "from": "Y!mobile",
+      "from": "Ymobile",
       "note": "12ヶ月間"
     }
     },
-  "Y!mobile": {
+  "Ymobile": {
     "fixedLine": {
       "name": "おうち割光セット(A)",
       "value": 1650,
@@ -71,7 +71,7 @@
       "values": { "1回線": 0, "2回線以上": 1100 }
     }
   },
-  "UQ mobile": {
+  "UQ_mobile": {
     "fixedLine": {
       "name": "自宅セット割",
       "value": 1100,

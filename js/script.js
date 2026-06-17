@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             item.innerHTML = `
-                <h3>${key.replace('_', ' ')}</h3>
+                <h3>${getDisplayName(key)}</h3>
                 <div class="list-item-content">
                     <div class="price-section">
                         <h4>💰 基本料金（最大）</h4>
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
             question.options.forEach(option => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
-                btn.textContent = option;
+                btn.textContent = getDisplayName(option);
                 if (answers[question.id] === option) {
                     btn.classList.add('selected');
                 }
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const progress = ((currentQuestionIndex) / activeQuestionIds.length) * 100;
+        const progress = ((currentQuestionIndex + 1) / activeQuestionIds.length) * 100;
         progressFill.style.width = `${progress}%`;
         prevBtn.style.display = currentQuestionIndex === 0 ? 'none' : 'block';
     }
@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     totalDiscount += rule.values[userAns];
                                 } else if ((userAns === '3回線' || userAns === '4回線' || userAns === '5回線以上') && rule.values['3回線以上'] !== undefined) {
                                     totalDiscount += rule.values['3回線以上'];
-                                } else if ((userAns !== '1回線') && rule.values['2回線以上'] !== undefined) {
+                                } else if ((userAns === '2回線' || userAns === '3回線' || userAns === '4回線' || userAns === '5回線以上') && rule.values['2回線以上'] !== undefined) {
                                     totalDiscount += rule.values['2回線以上'];
                                 }
                             } else if (rule.value) {
@@ -356,14 +356,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (itemClass === 'summary-item') {
                 item.innerHTML = `
                     <div class="summary-label">${label}</div>
-                    <div class="summary-value">${val}</div>
+                    <div class="summary-value">${getDisplayName(val)}</div>
                 `;
             } else {
                 // cert-ans-item
                 item.className = 'cert-ans-item';
                 item.innerHTML = `
                     <span class="cert-ans-label">${label}</span>
-                    <span class="cert-ans-value">${val}</span>
+                    <span class="cert-ans-value">${getDisplayName(val)}</span>
                 `;
             }
             container.appendChild(item);
@@ -395,12 +395,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 best = { ...res, carrier: key };
             }
         });
+
+        // Fallback: If no preferred carrier is found, pick the best from all available results
+        if (!best) {
+            for (const [key, res] of Object.entries(results)) {
+                if (!best || res.fee < best.fee) {
+                    best = { ...res, carrier: key };
+                }
+            }
+        }
         return best;
+    }
+
+    function getDisplayName(name) {
+        if (!name) return '---';
+        const names = {
+            'Ymobile': 'Y!mobile',
+            'UQ_mobile': 'UQ mobile'
+        };
+        return names[name] || name;
     }
 
     function renderCarrierResult(elementId, result) {
         const container = document.getElementById(elementId);
-        container.querySelector('.carrier-name').textContent = result.carrier;
+        
+        if (!result) {
+            container.querySelector('.carrier-name').textContent = '該当なし';
+            const oldFee = container.querySelector('.fee-estimate-v2');
+            if (oldFee) oldFee.remove();
+            const oldBadges = container.querySelectorAll('.campaign-badge');
+            oldBadges.forEach(b => b.remove());
+            container.querySelector('.features').innerHTML = '<li>条件に合うプランが見つかりませんでした</li>';
+            return;
+        }
+
+        container.querySelector('.carrier-name').textContent = getDisplayName(result.carrier);
         
         const oldFee = container.querySelector('.fee-estimate-v2');
         if (oldFee) oldFee.remove();
@@ -454,21 +483,21 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="cert-item">
                 <div class="cert-item-cat">💰 月額料金重視</div>
                 <div class="cert-item-main">
-                    <div class="cert-carrier">${lastRecs.price.carrier}</div>
+                    <div class="cert-carrier">${getDisplayName(lastRecs.price.carrier)}</div>
                     <div class="cert-fee">約${lastRecs.price.fee.toLocaleString()}円〜</div>
                 </div>
             </div>
             <div class="cert-item">
                 <div class="cert-item-cat">🚀 通信品質重視</div>
                 <div class="cert-item-main">
-                    <div class="cert-carrier">${lastRecs.quality.carrier}</div>
+                    <div class="cert-carrier">${getDisplayName(lastRecs.quality.carrier)}</div>
                     <div class="cert-fee">約${lastRecs.quality.fee.toLocaleString()}円〜</div>
                 </div>
             </div>
             <div class="cert-item">
                 <div class="cert-item-cat">🎁 サービス重視</div>
                 <div class="cert-item-main">
-                    <div class="cert-carrier">${lastRecs.service.carrier}</div>
+                    <div class="cert-carrier">${getDisplayName(lastRecs.service.carrier)}</div>
                     <div class="cert-fee">約${lastRecs.service.fee.toLocaleString()}円〜</div>
                 </div>
             </div>

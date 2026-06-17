@@ -23,7 +23,16 @@ function calculateResults(answers) {
     const userGB = getGBValue(answers.monthlyData);
 
     for (const [carrierKey, plans] of Object.entries(plansData)) {
+        // MNP/機種変更系の場合、現在のキャリアは除外
+        if (
+            (answers.contractType === 'MNP' || answers.contractType === '機種変更＋MNP') &&
+            answers.currentCarrier === carrierKey
+        ) {
+            continue;
+        }
+
         let bestPlanForCarrier = null;
+        // ... (rest of the logic)
 
         for (const [planName, planInfo] of Object.entries(plans)) {
             let basePrice = 0;
@@ -48,9 +57,18 @@ function calculateResults(answers) {
                     const rule = rules[dType];
                     if (!rule) return;
                     if (dType === 'family') {
-                        const count = answers.familyLines === '5回線以上' ? '3回線以上' : 
-                                     (parseInt(answers.familyLines) >= 3 ? '3回線以上' : answers.familyLines);
-                        totalDiscount += rule.values[count] || 0;
+                        const userAns = answers.familyLines;
+                        if (rule.values) {
+                            if (rule.values[userAns] !== undefined) {
+                                totalDiscount += rule.values[userAns];
+                            } else if ((userAns === '3回線' || userAns === '4回線' || userAns === '5回線以上') && rule.values['3回線以上'] !== undefined) {
+                                totalDiscount += rule.values['3回線以上'];
+                            } else if ((userAns === '2回線' || userAns === '3回線' || userAns === '4回線' || userAns === '5回線以上') && rule.values['2回線以上'] !== undefined) {
+                                totalDiscount += rule.values['2回線以上'];
+                            }
+                        } else if (rule.value) {
+                            totalDiscount += rule.value;
+                        }
                     } else if (dType === 'fixedLine') {
                         if (rule.requires.includes(answers.homeInternet)) totalDiscount += rule.value;
                     } else if (dType === 'card') {
@@ -96,6 +114,15 @@ function calculateResults(answers) {
                 best = { ...res, carrier: key };
             }
         });
+
+        // Fallback: If no preferred carrier is found, pick the best from all available results
+        if (!best) {
+            for (const [key, res] of Object.entries(results)) {
+                if (!best || res.fee < best.fee) {
+                    best = { ...res, carrier: key };
+                }
+            }
+        }
         return best;
     };
 
@@ -123,6 +150,10 @@ const scenarios = [
     {
         name: "Case 4: docomo Fan (Heavy User, docomo Hikari, d-card)",
         answers: { monthlyData: "30GB以上", familyLines: "3回線以上", homeInternet: "docomo光", creditCard: "dカード" }
+    },
+    {
+        name: "Case 5: ahamo User (30GB以上, MNP) - POTENTIAL FAILURE",
+        answers: { contractType: "MNP", currentCarrier: "ahamo", monthlyData: "30GB以上", familyLines: "1回線", homeInternet: "なし", creditCard: "その他" }
     }
 ];
 
