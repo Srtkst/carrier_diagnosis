@@ -1,0 +1,27 @@
+{
+  "最新のiPhoneを使いたい": {
+    "name": "iPhone 17 / 17 Pro",
+    "features": ["最新のA19チップ搭載", "進化したカメラシステム", "超高速5G対応"],
+    "carriers": ["docomo", "au", "SoftBank", "ahamo", "UQ_mobile"]
+  },
+  "iPhoneが良いが、なるべく安く済ませたい": {
+    "name": "iPhone SE (第3世代)",
+    "features": ["使いやすいホームボタン", "コンパクトなサイズ", "手頃な価格"],
+    "carriers": ["docomo", "au", "SoftBank", "UQ_mobile", "Ymobile", "ahamo"]
+  },
+  "写真や動画を最高にきれいに撮りたい": {
+    "name": "Google Pixel 8 Pro / Galaxy S24 Ultra",
+    "features": ["AIによる画像編集", "強力なズーム機能", "最高峰のディスプレイ"],
+    "carriers": ["docomo", "au", "SoftBank"]
+  },
+  "とにかく安くて、普段使いに困らないものが良い": {
+    "name": "Google Pixel 8a / AQUOS wish3",
+    "features": ["高いコストパフォーマンス", "防水・防塵対応", "必要十分なスペック"],
+    "carriers": ["docomo", "au", "SoftBank", "UQ_mobile", "Ymobile"]
+  },
+  "文字が大きくて、操作が簡単なものが良い": {
+    "name": "らくらくスマートフォン / かんたんスマホ3",
+    "features": ["大きな文字とボタン", "専任オペレーター相談", "聞き取りやすい通話"],
+    "carriers": ["docomo", "au", "SoftBank", "Ymobile"]
+  }
+}

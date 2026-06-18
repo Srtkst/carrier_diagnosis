@@ -1,15 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // 状態管理
     let questions = [];
     let plansData = {};
     let rulesData = {};
+    let devicesData = {};
     let currentQuestionIndex = 0;
     let answers = {};
     let activeQuestionIds = [];
+    let lastRecs = null;
+    let crewDebugData = {};
 
+    // UI要素の取得
     const startScreen = document.getElementById('start-screen');
     const carrierListScreen = document.getElementById('carrier-list-screen');
     const questionContainer = document.getElementById('question-container');
     const resultScreen = document.getElementById('result-screen');
+    const deviceResultScreen = document.getElementById('device-result-screen');
     
     const startBtn = document.getElementById('start-btn');
     const showListBtn = document.getElementById('show-list-btn');
@@ -23,51 +29,69 @@ document.addEventListener('DOMContentLoaded', () => {
     const optionsContainer = document.getElementById('options-container');
 
     const genCertBtn = document.getElementById('gen-cert-btn');
+    const genCertBtnDevice = document.getElementById('gen-cert-btn-device');
     const captureModal = document.getElementById('capture-modal');
     const closeModal = document.getElementById('close-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
     const certResults = document.getElementById('cert-results');
     const certDate = document.getElementById('cert-date');
     const certUserName = document.getElementById('cert-user-name');
     const downloadImgBtn = document.getElementById('download-img-btn');
 
-    // Fullscreen Toggle
-    const fullscreenBtn = document.getElementById('fullscreen-btn');
-    fullscreenBtn.addEventListener('click', () => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(err => {
-                console.error(`全画面表示の有効化に失敗しました: ${err.message}`);
-            });
-            fullscreenBtn.textContent = '📺 元に戻す';
-        } else {
-            document.exitFullscreen();
-            fullscreenBtn.textContent = '📺 全画面';
-        }
-    });
+    const crewDebugBtn = document.getElementById('crew-debug-btn');
+    const crewDebugTrigger = document.getElementById('crew-debug-trigger');
+    const crewModal = document.getElementById('crew-modal');
+    const crewDebugContent = document.getElementById('crew-debug-content');
 
     const answerSummary = document.getElementById('answer-summary');
     const certAnswers = document.getElementById('cert-answers');
 
-    let lastRecs = null;
+    // 全画面表示トグル
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`全画面表示エラー: ${err.message}`);
+                });
+                fullscreenBtn.textContent = '📺 元に戻す';
+            } else {
+                document.exitFullscreen();
+                fullscreenBtn.textContent = '📺 全画面';
+            }
+        });
+    }
 
     // データ読み込み
     async function loadData() {
         try {
-            const [qRes, pRes, rRes] = await Promise.all([
+            console.log('データを読み込み中...');
+            const [qRes, pRes, rRes, dRes] = await Promise.all([
                 fetch('data/question.json'),
                 fetch('data/plans.json'),
-                fetch('data/rules.json')
+                fetch('data/rules.json'),
+                fetch('data/devices.json')
             ]);
+
+            if (!qRes.ok || !pRes.ok || !rRes.ok || !dRes.ok) {
+                throw new Error('一部のデータファイルの読み込みに失敗しました。');
+            }
+
             questions = (await qRes.json()).questions;
             plansData = await pRes.json();
             rulesData = await rRes.json();
+            devicesData = await dRes.json();
             
+            console.log('データ読み込み完了:', { questions, plansData, rulesData, devicesData });
             generateCarrierList();
         } catch (error) {
             console.error('データの読み込みに失敗しました:', error);
+            alert('システムの初期化に失敗しました。ページを再読み込みしてください。');
         }
     }
 
     function generateCarrierList() {
+        if (!carrierListContainer) return;
         carrierListContainer.innerHTML = '';
         for (const [key, plans] of Object.entries(plansData)) {
             const item = document.createElement('div');
@@ -75,50 +99,40 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let planHtml = '';
             for (const [pName, pInfo] of Object.entries(plans)) {
-                if (pInfo.tiers) {
-                    const maxTier = pInfo.tiers[pInfo.tiers.length - 1];
-                    planHtml += `
-                        <div class="price-item">
-                            <span class="price-label">${pName}</span>
-                            <span class="price-value">${maxTier.price.toLocaleString()}円〜</span>
-                        </div>`;
-                } else {
-                    planHtml += `
-                        <div class="price-item">
-                            <span class="price-label">${pName}</span>
-                            <span class="price-value">${pInfo.price.toLocaleString()}円</span>
-                        </div>`;
-                }
+                const price = pInfo.tiers ? pInfo.tiers[pInfo.tiers.length - 1].price : pInfo.price;
+                planHtml += `
+                    <div class="price-item">
+                        <span class="price-label">${pName}</span>
+                        <span class="price-value">${(price || 0).toLocaleString()}円${pInfo.tiers ? '〜' : ''}</span>
+                    </div>`;
             }
 
-            let discountHtml = '';
+            let discountHtml = '<ul>';
             const rules = rulesData[key];
             if (rules) {
-                discountHtml = '<ul>';
                 for (const r of Object.values(rules)) {
-                    discountHtml += `<li>${r.name}</li>`;
+                    if (r && r.name) discountHtml += `<li>${r.name}</li>`;
                 }
-                discountHtml += '</ul>';
             }
+            discountHtml += '</ul>';
 
             item.innerHTML = `
                 <h3>${getDisplayName(key)}</h3>
                 <div class="list-item-content">
-                    <div class="price-section">
-                        <h4>💰 基本料金（最大）</h4>
-                        ${planHtml}
-                    </div>
-                    <div class="discount-tag-list">
-                        <h4>✨ 適用可能な割引</h4>
-                        ${discountHtml}
-                    </div>
+                    <div class="price-section"><h4>💰 基本料金（最大）</h4>${planHtml}</div>
+                    <div class="discount-tag-list"><h4>✨ 適用可能な割引</h4>${discountHtml}</div>
                 </div>
             `;
             carrierListContainer.appendChild(item);
         }
     }
 
+    // イベントリスナーの登録
     startBtn.addEventListener('click', () => {
+        if (questions.length === 0) {
+            alert('データの準備ができていません。しばらくお待ちください。');
+            return;
+        }
         startScreen.classList.add('hidden');
         questionContainer.classList.remove('hidden');
         updateActiveQuestions();
@@ -136,48 +150,91 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     homeBtn.addEventListener('click', () => {
-        if (confirm('診断を中止して最初に戻りますか？')) {
-            location.reload();
-        }
+        if (confirm('診断を中止して最初に戻りますか？')) location.reload();
     });
+
+    if (crewDebugBtn) {
+        crewDebugBtn.addEventListener('click', () => {
+            renderCrewDebug();
+            crewModal.classList.remove('hidden');
+        });
+    }
+
+    if (crewDebugTrigger) {
+        crewDebugTrigger.addEventListener('click', () => {
+            renderCrewDebug();
+            crewModal.classList.remove('hidden');
+        });
+    }
+
+    const closeCrewModal = document.getElementById('close-crew-modal');
+    if (closeCrewModal) {
+        closeCrewModal.onclick = () => crewModal.classList.add('hidden');
+    }
+
+    function renderCrewDebug() {
+        crewDebugContent.innerHTML = '';
+        if (Object.keys(crewDebugData).length === 0) {
+            crewDebugContent.innerHTML = '<p style="color:white;">診断を完了させると計算詳細が表示されます。</p>';
+            return;
+        }
+
+        for (const [carrierKey, data] of Object.entries(crewDebugData)) {
+            const block = document.createElement('div');
+            block.className = 'crew-carrier-block';
+            let discountsHtml = data.appliedDiscounts.map(d => `<div class="crew-discount-item">・${d.name}: -${d.value.toLocaleString()}円</div>`).join('');
+
+            block.innerHTML = `
+                <div class="crew-carrier-title">${getDisplayName(carrierKey)}</div>
+                <div class="crew-calc-row"><span>プラン:</span> <span>${data.planName}</span></div>
+                <div class="crew-calc-row"><span>基本:</span> <span>${data.basePrice.toLocaleString()}円</span></div>
+                <div class="crew-discount-list"><strong>適用施策:</strong>${discountsHtml || '<div>なし</div>'}</div>
+                <div class="crew-calc-row" style="margin-top:10px; font-weight:900; color:#ff7675;">
+                    <span>実質:</span> <span>${data.finalFee.toLocaleString()}円</span>
+                </div>
+            `;
+            crewDebugContent.appendChild(block);
+        }
+    }
 
     function showQuestion() {
         const currentId = activeQuestionIds[currentQuestionIndex];
         const question = questions.find(q => q.id === currentId);
 
-        if (answers.contractType === '新規' && question.titleForNew) {
-            questionTitle.textContent = question.titleForNew;
-        } else {
-            questionTitle.textContent = question.title;
+        if (!question) {
+            console.error('質問が見つかりません:', currentId);
+            return;
         }
-        
+
+        questionTitle.textContent = (answers.contractType === '新規' && question.titleForNew) ? question.titleForNew : question.title;
         optionsContainer.innerHTML = '';
 
         if (question.type === 'text') {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'text-input-wrapper';
+            
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'option-btn';
             input.placeholder = question.placeholder || '';
             input.value = answers[question.id] || '';
             input.style.width = '100%';
-            input.style.textAlign = 'left';
+            input.style.textAlign = 'center';
             
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'btn btn-primary';
-            nextBtn.textContent = '次へ';
-            nextBtn.style.marginTop = '20px';
-            nextBtn.onclick = () => selectOption(question.id, input.value || 'お客様');
+            const next = document.createElement('button');
+            next.className = 'btn btn-primary';
+            next.style.marginTop = '30px';
+            next.textContent = '次へ';
+            next.onclick = () => selectOption(question.id, input.value || 'お客様');
             
-            optionsContainer.appendChild(input);
-            optionsContainer.appendChild(nextBtn);
+            wrapper.appendChild(input);
+            wrapper.appendChild(next);
+            optionsContainer.appendChild(wrapper);
         } else {
-            question.options.forEach(option => {
+            (question.options || []).forEach(option => {
                 const btn = document.createElement('button');
-                btn.className = 'option-btn';
+                btn.className = `option-btn ${answers[question.id] === option ? 'selected' : ''}`;
                 btn.textContent = getDisplayName(option);
-                if (answers[question.id] === option) {
-                    btn.classList.add('selected');
-                }
                 btn.onclick = () => selectOption(question.id, option);
                 optionsContainer.appendChild(btn);
             });
@@ -185,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const progress = ((currentQuestionIndex + 1) / activeQuestionIds.length) * 100;
         progressFill.style.width = `${progress}%`;
-        prevBtn.style.display = currentQuestionIndex === 0 ? 'none' : 'block';
+        prevBtn.style.display = currentQuestionIndex === 0 ? 'none' : 'inline-block';
     }
 
     function selectOption(questionId, option) {
@@ -219,175 +276,190 @@ document.addEventListener('DOMContentLoaded', () => {
                         break;
                     }
                 }
-                if (shouldShow) {
-                    activeQuestionIds.push(q.id);
-                }
+                if (shouldShow) activeQuestionIds.push(q.id);
             }
         });
     }
 
     function showResult() {
         questionContainer.classList.add('hidden');
+        if (answers.contractType === '機種変更' || answers.contractType === '機種変更＋MNP') {
+            showDeviceResult();
+        } else {
+            showNormalResult();
+        }
+    }
+
+    function showNormalResult() {
         resultScreen.classList.remove('hidden');
-
-        const calculatedResults = {};
-        const upgradeSuggestions = {};
-        const userGB = getGBValue(answers.monthlyData);
-        const currentUserGrade = rulesData.grades[answers.currentCarrier] || 0;
-        
-        let currentGroupKey = null;
-        if (rulesData.groups) {
-            for (const [groupKey, members] of Object.entries(rulesData.groups)) {
-                if (members.includes(answers.currentCarrier)) {
-                    currentGroupKey = groupKey;
-                    break;
-                }
-            }
-        }
-
-        for (const [carrierKey, plans] of Object.entries(plansData)) {
-            const isSameGroup = currentGroupKey && rulesData.groups[currentGroupKey].includes(carrierKey);
-            const targetCarrierGrade = rulesData.grades[carrierKey] || 0;
-
-            if (answers.contractType !== '新規' && targetCarrierGrade < currentUserGrade) {
-                continue;
-            }
-
-            if (answers.contractType === 'MNP' || answers.contractType === '機種変更＋MNP') {
-                if (isSameGroup && carrierKey !== answers.currentCarrier) {
-                    if (targetCarrierGrade > currentUserGrade) {
-                        const bestPlan = calculateBestPlan(carrierKey, plans, userGB);
-                        if (bestPlan) upgradeSuggestions[carrierKey] = bestPlan;
-                    }
-                    continue;
-                }
-                if (carrierKey === answers.currentCarrier) continue;
-            }
-
-            if (answers.contractType === '機種変更') {
-                if (carrierKey !== answers.currentCarrier) continue;
-            }
-
-            const bestPlan = calculateBestPlan(carrierKey, plans, userGB);
-            if (bestPlan) calculatedResults[carrierKey] = bestPlan;
-        }
-
-        const recommendations = {
-            price: getBest('price', calculatedResults),
-            quality: getBest('quality', calculatedResults),
-            service: getBest('service', calculatedResults)
+        const results = calculateAllPlans();
+        lastRecs = {
+            price: getBest('price', results),
+            quality: getBest('quality', results),
+            service: getBest('service', results)
         };
-        lastRecs = recommendations;
 
-        renderCarrierResult('result-price', recommendations.price);
-        renderCarrierResult('result-quality', recommendations.quality);
-        renderCarrierResult('result-service', recommendations.service);
+        renderCarrierResult('result-price', lastRecs.price);
+        renderCarrierResult('result-quality', lastRecs.quality);
+        renderCarrierResult('result-service', lastRecs.service);
 
-        renderUpgradeSuggestions(upgradeSuggestions);
+        const upgradeContainer = document.getElementById('upgrade-suggestions-container');
+        if (answers.contractType === 'MNP') {
+            renderUpgradeSuggestions(calculateUpgradeSuggestions());
+        } else {
+            upgradeContainer.classList.add('hidden');
+        }
+
         renderAnswerSummary(answerSummary, 'summary-item');
     }
 
+    function showDeviceResult() {
+        deviceResultScreen.classList.remove('hidden');
+        const device = devicesData[answers.devicePreference] || { name: '推奨機種なし', features: [], carriers: [] };
+        
+        document.getElementById('recommended-device-name').textContent = device.name;
+        const featuresList = document.getElementById('device-features-list');
+        featuresList.innerHTML = device.features.map(f => `<li>${f}</li>`).join('');
+
+        const results = calculateAllPlans();
+        const carrierList = document.getElementById('device-carrier-list');
+        carrierList.innerHTML = '';
+
+        Object.entries(results).forEach(([key, plan]) => {
+            const isAvail = device.carriers.includes(key);
+            const card = document.createElement('div');
+            card.className = `device-carrier-card ${isAvail ? '' : 'unavailable'}`;
+            card.innerHTML = `
+                <div class="dev-carrier-name">${getDisplayName(key)}</div>
+                <div class="dev-plan-name">${plan.name}</div>
+                <div class="dev-fee">月額 ${plan.fee.toLocaleString()}円〜</div>
+                ${isAvail ? '' : '<div style="color:#e66767; font-weight:700; margin-top:5px;">※この機種の取扱なし</div>'}
+            `;
+            carrierList.appendChild(card);
+        });
+
+        lastRecs = { device: device.name, results };
+    }
+
+    function calculateAllPlans() {
+        const results = {};
+        const userGB = getGBValue(answers.monthlyData);
+        const currentUserGrade = rulesData.grades ? (rulesData.grades[answers.currentCarrier] || 0) : 0;
+
+        for (const [carrierKey, plans] of Object.entries(plansData)) {
+            const targetGrade = rulesData.grades ? (rulesData.grades[carrierKey] || 0) : 0;
+            if (answers.contractType !== '新規' && targetGrade < currentUserGrade) continue;
+            if (answers.contractType === '機種変更' && carrierKey !== answers.currentCarrier) continue;
+
+            const best = calculateBestPlan(carrierKey, plans, userGB);
+            if (best) results[carrierKey] = best;
+        }
+        return results;
+    }
+
+    function calculateUpgradeSuggestions() {
+        const suggestions = {};
+        const userGB = getGBValue(answers.monthlyData);
+        const currentUserGrade = rulesData.grades ? (rulesData.grades[answers.currentCarrier] || 0) : 0;
+        
+        let currentGroupKey = null;
+        if (rulesData.groups) {
+            for (const [gk, members] of Object.entries(rulesData.groups)) {
+                if (members.includes(answers.currentCarrier)) { currentGroupKey = gk; break; }
+            }
+        }
+
+        if (currentGroupKey && rulesData.groups[currentGroupKey]) {
+            rulesData.groups[currentGroupKey].forEach(ck => {
+                if (ck === answers.currentCarrier) return;
+                const targetGrade = rulesData.grades ? (rulesData.grades[ck] || 0) : 0;
+                if (targetGrade > currentUserGrade) {
+                    const plan = calculateBestPlan(ck, plansData[ck], userGB);
+                    if (plan) suggestions[ck] = plan;
+                }
+            });
+        }
+        return suggestions;
+    }
+
     function calculateBestPlan(carrierKey, plans, userGB) {
-        let bestPlanForCarrier = null;
+        let bestPlan = null;
+        let bestDetails = null;
 
-        for (const [planName, planInfo] of Object.entries(plans)) {
-            let basePrice = 0;
-            if (planInfo.type === 'tiered' || planInfo.type === 'flat') {
-                const maxData = planInfo.data || (planInfo.tiers ? planInfo.tiers[planInfo.tiers.length - 1].upTo : 0);
-                if (userGB > maxData) continue;
-            }
+        for (const [pName, pInfo] of Object.entries(plans)) {
+            const maxData = pInfo.data || (pInfo.tiers ? pInfo.tiers[pInfo.tiers.length - 1].upTo : 0);
+            if (userGB > maxData) continue;
 
-            if (planInfo.tiers) {
-                const tier = planInfo.tiers.find(t => userGB <= t.upTo);
-                if (!tier) continue;
-                basePrice = tier.price;
-            } else {
-                basePrice = planInfo.price;
-            }
+            const basePrice = pInfo.tiers ? (pInfo.tiers.find(t => userGB <= t.upTo)?.price || Infinity) : pInfo.price;
+            if (basePrice === Infinity) continue;
 
             let totalDiscount = 0;
-            let currentPlanCampaignNotes = [];
+            let applied = [];
             const rules = rulesData[carrierKey];
-            if (rules && planInfo.discountEligibility) {
-                planInfo.discountEligibility.forEach(dType => {
+            if (rules && pInfo.discountEligibility) {
+                pInfo.discountEligibility.forEach(dType => {
                     const rule = rules[dType];
                     if (!rule) return;
+                    let val = 0;
                     if (dType === 'family') {
-                        const userAns = answers.familyLines;
+                        const ua = answers.familyLines;
                         if (rule.values) {
-                            if (rule.values[userAns] !== undefined) {
-                                totalDiscount += rule.values[userAns];
-                            } else if ((userAns === '3回線' || userAns === '4回線' || userAns === '5回線以上') && rule.values['3回線以上'] !== undefined) {
-                                totalDiscount += rule.values['3回線以上'];
-                            } else if ((userAns === '2回線' || userAns === '3回線' || userAns === '4回線' || userAns === '5回線以上') && rule.values['2回線以上'] !== undefined) {
-                                totalDiscount += rule.values['2回線以上'];
-                            }
-                        } else if (rule.value) {
-                            totalDiscount += rule.value;
-                        }
+                            val = rule.values[ua] ?? (['3回線','4回線','5回線以上'].includes(ua) ? rule.values['3回線以上'] : (['2回線','3回線','4回線','5回線以上'].includes(ua) ? rule.values['2回線以上'] : 0)) ?? 0;
+                        } else { val = rule.value || 0; }
                     } else if (dType === 'fixedLine') {
-                        if (rule.requires.includes(answers.homeInternet)) totalDiscount += rule.value;
+                        if (rule.requires?.includes(answers.homeInternet)) val = rule.value || 0;
                     } else if (dType === 'card') {
                         const card = answers.creditCard;
                         if ((carrierKey === 'docomo' && card === 'dカード') ||
-                            ((carrierKey === 'au' || carrierKey === 'UQ_mobile') && card === 'au PAYカード') ||
-                            ((carrierKey === 'SoftBank' || carrierKey === 'Ymobile') && card.includes('PayPayカード'))) {
-                            totalDiscount += rule.value;
-                        }
-                    } else if (dType === 'upgrade') {
-                        if (answers.contractType && answers.contractType.includes('MNP') && answers.currentCarrier === rule.from) {
-                            totalDiscount += rule.value;
-                            currentPlanCampaignNotes.push(`${rule.name} (${rule.note})`);
-                        }
+                            (['au','UQ_mobile'].includes(carrierKey) && card === 'au PAYカード') ||
+                            (['SoftBank','Ymobile'].includes(carrierKey) && card?.includes('PayPayカード'))) val = rule.value || 0;
                     }
+                    if (val > 0) { totalDiscount += val; applied.push({ name: rule.name, value: val }); }
                 });
             }
 
             const finalFee = basePrice - totalDiscount;
-            let score = finalFee;
-            if (userGB >= 30 && planInfo.type === 'unlimited') {
-                score -= 500;
-            }
+            const score = finalFee - (userGB >= 30 && pInfo.type === 'unlimited' ? 500 : 0);
 
-            if (!bestPlanForCarrier || score < bestPlanForCarrier.score) {
-                bestPlanForCarrier = { 
-                    name: planName, 
-                    fee: finalFee, 
-                    score: score,
-                    features: planInfo.features || [],
-                    campaignNotes: (planInfo.campaignNotes || []).concat(currentPlanCampaignNotes)
-                };
+            if (!bestPlan || score < bestPlan.score) {
+                bestPlan = { name: pName, fee: finalFee, score, features: pInfo.features || [] };
+                bestDetails = { planName: pName, basePrice, appliedDiscounts: applied, finalFee };
             }
         }
-        return bestPlanForCarrier;
+        if (bestDetails) crewDebugData[carrierKey] = bestDetails;
+        return bestPlan;
     }
 
     function renderUpgradeSuggestions(suggestions) {
         const container = document.getElementById('upgrade-suggestions-container');
-        if (!container) return;
-
         container.innerHTML = '';
         const keys = Object.keys(suggestions);
-        if (keys.length === 0) {
-            container.classList.add('hidden');
-            return;
-        }
+        if (keys.length === 0) { container.classList.add('hidden'); return; }
 
         container.classList.remove('hidden');
-        const title = document.createElement('h3');
-        title.textContent = '💡 同一グループ内でのアップグレード提案';
-        title.style.margin = '20px 0 10px';
-        title.style.fontSize = '1.2rem';
-        container.appendChild(title);
-
-        keys.forEach(key => {
-            const res = suggestions[key];
+        container.innerHTML = '<h3 style="margin-bottom:20px;">💡 同一グループ内でのアップグレード提案</h3>';
+        keys.forEach(k => {
+            const res = suggestions[k];
             const div = document.createElement('div');
             div.className = 'upgrade-card fade-in';
+            
+            let extraInfo = '手続きが簡単で、サービス品質を向上できます。';
+            if (answers.currentCarrier === 'UQ_mobile' && k === 'au') {
+                extraInfo = '「auマネ活プラン」や「無制限使い放題」が選べるようになり、最新iPhoneの購入サポートも手厚くなります。';
+            } else if (answers.currentCarrier === 'Ymobile' && k === 'SoftBank') {
+                extraInfo = '「ペイトク」での還元や、Yahoo!ショッピング等の特典がさらに強力になります。データ無制限も選択可能です。';
+            } else if (answers.currentCarrier === 'ahamo' && k === 'docomo') {
+                extraInfo = 'ドコモショップでのフルサポートが受けられ、ファミリー割引の回線数カウント対象にもなります。';
+            }
+
             div.innerHTML = `
                 <div class="upgrade-info">
-                    <strong>${getDisplayName(key)} (${res.name})</strong><br>
-                    <span>複雑なMNP手続き不要で、サービス品質を向上できます。</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <strong style="font-size:1.6rem;">${getDisplayName(k)} (${res.name})</strong>
+                        <span style="background:var(--primary-grad); color:white; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:900;">オススメ</span>
+                    </div>
+                    <p style="font-size:1.1rem; color:var(--text-main); font-weight:700; margin-bottom:8px;">月額目安: ${res.fee.toLocaleString()}円〜</p>
+                    <span style="font-size:0.95rem; color:var(--text-sub); line-height:1.5; display:block;">${extraInfo}</span>
                 </div>
             `;
             container.appendChild(div);
@@ -395,176 +467,97 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderAnswerSummary(container, itemClass) {
+        if (!container) return;
         container.innerHTML = '';
         activeQuestionIds.forEach(id => {
             if (id === 'userName') return;
             const q = questions.find(question => question.id === id);
             const val = answers[id];
-            if (!val) return;
+            if (!val || !q) return;
 
-            const item = document.createElement('div');
-            item.className = itemClass;
             const label = q.title.split('を選択')[0].split('を入力')[0];
-            
+            const item = document.createElement('div');
             if (itemClass === 'summary-item') {
-                item.innerHTML = `
-                    <div class="summary-label">${label}</div>
-                    <div class="summary-value">${getDisplayName(val)}</div>
-                `;
+                item.className = itemClass;
+                item.innerHTML = `<div class="summary-label">${label}</div><div class="summary-value">${getDisplayName(val)}</div>`;
             } else {
                 item.className = 'cert-ans-item';
-                item.innerHTML = `
-                    <span class="cert-ans-label">${label}</span>
-                    <span class="cert-ans-value">${getDisplayName(val)}</span>
-                `;
+                item.innerHTML = `<span class="cert-ans-label">${label}</span><span class="cert-ans-value">${getDisplayName(val)}</span>`;
             }
             container.appendChild(item);
         });
     }
 
     function getGBValue(ans) {
-        if (ans === '1GB未満') return 0.5;
-        if (ans === '1～3GB') return 3;
-        if (ans === '3～10GB') return 10;
-        if (ans === '10～20GB') return 20;
-        if (ans === '20～30GB') return 30;
-        if (ans === '30GB以上') return 100;
-        return 5;
+        return { '1GB未満': 0.5, '1～3GB': 3, '3～10GB': 10, '10～20GB': 20, '20～30GB': 30, '30GB以上': 100 }[ans] || 5;
     }
 
     function getBest(category, results) {
-        const categories = {
-            price: ['Ymobile', 'UQ_mobile', 'ahamo'],
-            quality: ['docomo', 'au', 'SoftBank'],
-            service: ['SoftBank', 'au', 'docomo']
-        };
-        const targets = categories[category];
+        const cats = { price: ['Ymobile', 'UQ_mobile', 'ahamo'], quality: ['docomo', 'au', 'SoftBank'], service: ['SoftBank', 'au', 'docomo'] };
         let best = null;
-        targets.forEach(key => {
-            const res = results[key];
-            if (!res) return;
-            if (!best || res.fee < best.fee) {
-                best = { ...res, carrier: key };
-            }
+        (cats[category] || Object.keys(results)).forEach(k => {
+            const res = results[k];
+            if (res && (!best || res.fee < best.fee)) best = { ...res, carrier: k };
         });
-
-        if (!best) {
-            for (const [key, res] of Object.entries(results)) {
-                if (!best || res.fee < best.fee) {
-                    best = { ...res, carrier: key };
-                }
-            }
-        }
         return best;
     }
 
     function getDisplayName(name) {
-        if (!name) return '---';
-        const names = {
-            'Ymobile': 'Y!mobile',
-            'UQ_mobile': 'UQ mobile'
-        };
-        return names[name] || name;
+        return { 'Ymobile': 'Y!mobile', 'UQ_mobile': 'UQ mobile' }[name] || name;
     }
 
     function renderCarrierResult(elementId, result) {
         const container = document.getElementById(elementId);
-        if (!result) {
-            container.querySelector('.carrier-name').textContent = '該当なし';
-            const oldFee = container.querySelector('.fee-estimate-v2');
-            if (oldFee) oldFee.remove();
-            const oldBadges = container.querySelectorAll('.campaign-badge');
-            oldBadges.forEach(b => b.remove());
-            container.querySelector('.features').innerHTML = '<li>条件に合うプランが見つかりませんでした</li>';
-            return;
-        }
-
-        container.querySelector('.carrier-name').textContent = getDisplayName(result.carrier);
+        if (!container) return;
+        
+        // 既存の見積もり表示があれば削除
         const oldFee = container.querySelector('.fee-estimate-v2');
         if (oldFee) oldFee.remove();
-        const oldBadges = container.querySelectorAll('.campaign-badge');
-        oldBadges.forEach(b => b.remove());
 
-        const feeDisplay = document.createElement('div');
-        feeDisplay.className = 'fee-estimate-v2';
-        feeDisplay.innerHTML = `<span class="fee-label">割引適用後の実質目安</span>月額 ${result.fee.toLocaleString()}円〜<br><span style="font-size: 0.9rem; color: #636e72; font-weight: 400;">(${result.name})</span>`;
-        
+        if (!result) {
+            container.querySelector('.carrier-name').textContent = '該当なし';
+            return;
+        }
+        container.querySelector('.carrier-name').textContent = getDisplayName(result.carrier);
         const list = container.querySelector('.features');
         list.innerHTML = '';
-        container.insertBefore(feeDisplay, list);
-
-        if (result.campaignNotes) {
-            result.campaignNotes.forEach(note => {
-                const badge = document.createElement('div');
-                badge.className = 'campaign-badge';
-                badge.textContent = `✨ ${note}`;
-                container.insertBefore(badge, list);
-            });
-        }
-
-        const features = result.features.length > 0 ? result.features : getDefaultFeatures(result.carrier);
-        features.forEach(f => {
-            const li = document.createElement('li');
-            li.textContent = f;
-            list.appendChild(li);
-        });
+        const fee = document.createElement('div');
+        fee.className = 'fee-estimate-v2';
+        fee.innerHTML = `<span class="fee-label">実質目安</span>月額 ${result.fee.toLocaleString()}円〜<br><span style="font-size:0.9rem; color:#636e72;">(${result.name})</span>`;
+        container.insertBefore(fee, list);
     }
 
-    function getDefaultFeatures(carrier) {
-        const defaults = {
-            docomo: ["通信エリアが広い", "大手キャリア品質"],
-            au: ["Ponta連携", "店舗サポート充実"],
-            SoftBank: ["PayPay連携", "特典が豊富"],
-            Ymobile: ["家族・光割が強力", "店舗サポートあり"],
-            UQ_mobile: ["余ったデータ繰り越し", "速度が安定"],
-            ahamo: ["20GBワンプラン", "5分通話無料"]
-        };
-        return defaults[carrier] || [];
-    }
-
-    genCertBtn.addEventListener('click', () => {
+    function openCert() {
         if (!lastRecs) return;
         certUserName.textContent = answers.userName || 'お客様';
-        const now = new Date();
-        certDate.textContent = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
+        certDate.textContent = new Date().toLocaleDateString();
         
-        certResults.innerHTML = `
-            <div class="cert-item">
-                <div class="cert-item-cat">💰 月額料金重視</div>
-                <div class="cert-item-main">
-                    <div class="cert-carrier">${getDisplayName(lastRecs.price.carrier)}</div>
-                    <div class="cert-fee">約${lastRecs.price.fee.toLocaleString()}円〜</div>
+        if (lastRecs.device) {
+            certResults.innerHTML = `<h3>推奨機種: ${lastRecs.device}</h3><p>詳細は店頭スタッフまでお問い合わせください。</p>`;
+        } else {
+            certResults.innerHTML = ['price', 'quality', 'service'].map(k => `
+                <div class="cert-item">
+                    <div class="cert-item-cat">${k === 'price' ? '💰 料金' : (k === 'quality' ? '🚀 品質' : '🎁 サービス')}</div>
+                    <div class="cert-item-main">
+                        <div class="cert-carrier">${getDisplayName(lastRecs[k]?.carrier)}</div>
+                        <div class="cert-fee">約${(lastRecs[k]?.fee || 0).toLocaleString()}円〜</div>
+                    </div>
                 </div>
-            </div>
-            <div class="cert-item">
-                <div class="cert-item-cat">🚀 通信品質重視</div>
-                <div class="cert-item-main">
-                    <div class="cert-carrier">${getDisplayName(lastRecs.quality.carrier)}</div>
-                    <div class="cert-fee">約${lastRecs.quality.fee.toLocaleString()}円〜</div>
-                </div>
-            </div>
-            <div class="cert-item">
-                <div class="cert-item-cat">🎁 サービス重視</div>
-                <div class="cert-item-main">
-                    <div class="cert-carrier">${getDisplayName(lastRecs.service.carrier)}</div>
-                    <div class="cert-fee">約${lastRecs.service.fee.toLocaleString()}円〜</div>
-                </div>
-            </div>
-        `;
-
+            `).join('');
+        }
         renderAnswerSummary(certAnswers, 'cert-ans-item');
         captureModal.classList.remove('hidden');
-    });
+    }
 
+    genCertBtn.onclick = openCert;
+    genCertBtnDevice.onclick = openCert;
     closeModal.onclick = () => captureModal.classList.add('hidden');
-    document.getElementById('close-modal-btn').onclick = () => captureModal.classList.add('hidden');
-    window.onclick = (e) => { if (e.target == captureModal) captureModal.classList.add('hidden'); };
-
+    if (closeModalBtn) closeModalBtn.onclick = () => captureModal.classList.add('hidden');
     downloadImgBtn.onclick = () => {
         const target = document.getElementById('certificate-target');
-        html2canvas(target).then(canvas => {
+        if (target) html2canvas(target).then(canvas => {
             const link = document.createElement('a');
-            link.download = `キャリア診断書_${certDate.textContent}.png`;
+            link.download = `キャリア診断書_${new Date().toLocaleDateString()}.png`;
             link.href = canvas.toDataURL();
             link.click();
         });

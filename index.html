@@ -13,6 +13,7 @@
 <body>
     <div class="container">
         <button id="fullscreen-btn" class="fullscreen-toggle" title="全画面表示">📺 全画面</button>
+        <button id="crew-debug-trigger" class="crew-debug-trigger" title="Crew Debug">🛠️</button>
         <header>
             <h1><span class="title-segment">📱 モバイル</span><span class="title-segment">キャリア診断</span></h1>
             <p>あなたにぴったりの通信プランをご提案します</p>
@@ -114,6 +115,53 @@
                     </div>
                 </div>
             </div>
+
+            <!-- 機種変更専用結果画面 -->
+            <div id="device-result-screen" class="fade-in hidden">
+                <div class="device-result-container card">
+                    <div class="device-recommendation-header">
+                        <div class="device-badge">あなたにぴったりの機種</div>
+                        <h2 id="recommended-device-name">---</h2>
+                        <div class="device-disclaimer">
+                            ※端末の取扱状況はキャリアにより異なります。また、店頭在庫は常に変動するため、実際の在庫状況は店舗スタッフまでご確認ください。
+                        </div>
+                    </div>
+
+                    <div class="device-features-block">
+                        <ul id="device-features-list"></ul>
+                    </div>
+
+                    <div class="comparison-section">
+                        <h3>🔄 買い替えシミュレーション</h3>
+                        <div class="comparison-grid">
+                            <div class="comparison-card stay-card">
+                                <h4>今のキャリアを継続</h4>
+                                <div class="comp-point">✅ 手続きが非常にスムーズ</div>
+                                <div class="comp-point">✅ 今のポイントや特典を継続</div>
+                                <div class="comp-desc">なじみのあるサービスをそのまま使い続けたい方に最適です。</div>
+                            </div>
+                            <div class="comparison-card mnp-card">
+                                <h4>他社へMNP（乗り換え）</h4>
+                                <div class="comp-point highlight">🌟 端末代金の特別割引あり</div>
+                                <div class="comp-point highlight">🌟 高額ポイント還元のチャンス</div>
+                                <div class="comp-point highlight">🌟 最新機種が大幅にお得に</div>
+                                <div class="comp-desc">「とにかく安く最新機種を手に入れたい」ならMNPが圧倒的にお得です！</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="carrier-availability-section">
+                        <h3>🏢 各キャリアの取扱・プラン</h3>
+                        <div id="device-carrier-list" class="device-carrier-grid"></div>
+                    </div>
+
+                    <div class="result-actions" style="margin-top: 40px; text-align: center;">
+                        <button id="gen-cert-btn-device" class="btn btn-primary">診断書を表示</button>
+                        <br>
+                        <button class="btn btn-text" onclick="location.reload()">最初からやり直す</button>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <!-- モーダル: 撮影用診断書 -->
@@ -144,6 +192,20 @@
                 <div class="modal-btns">
                     <button class="btn btn-outline" id="close-modal-btn">閉じる</button>
                     <button class="btn btn-outline" id="download-img-btn">画像として保存 (タブレット用)</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- モーダル: クルー用計算詳細 -->
+        <div id="crew-modal" class="modal hidden">
+            <div class="modal-content crew-modal-content">
+                <span id="close-crew-modal" class="close">&times;</span>
+                <h2 style="color: white; margin-bottom: 20px;">🛠️ クルー専用：計算詳細・適用施策</h2>
+                <div id="crew-debug-content" class="crew-debug-content">
+                    <!-- JavaScriptで動的に生成 -->
+                </div>
+                <div class="modal-btns">
+                    <button class="btn btn-outline" onclick="document.getElementById('crew-modal').classList.add('hidden')">閉じる</button>
                 </div>
             </div>
         </div>
