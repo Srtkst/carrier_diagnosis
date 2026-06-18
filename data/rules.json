@@ -85,5 +85,19 @@
       "name": "家族セット割",
       "values": { "1回線": 0, "2回線以上": 550 }
     }
+  },
+  "groups": {
+    "docomo": ["docomo", "ahamo"],
+    "au": ["au", "UQ_mobile"],
+    "softbank": ["SoftBank", "Ymobile"]
+  },
+  "grades": {
+    "docomo": 3,
+    "ahamo": 2,
+    "au": 3,
+    "UQ_mobile": 2,
+    "SoftBank": 3,
+    "Ymobile": 2,
+    "その他": 1
   }
 }
