@@ -1,3 +1,24 @@
+<!--
+  @file index.html
+  @description モバイルキャリア診断システムのメインHTMLドキュメント
+  
+  【主な役割・機能】
+  1. シングルページアプリケーション (SPA) 構造の定義
+     - 画面全体のコンテナと、状況に応じて表示/非表示（.hiddenクラス）を切り替える各画面コンポーネントを定義。
+  2. 画面セクションの構成：
+     - 開始画面 (#start-screen) : 診断開始、プラン一覧。
+     - キャリア一覧画面 (#carrier-list-screen) : 主要キャリアの料金と特徴。
+     - 質問回答画面 (#question-container) : プログレスバーと質問、選択肢、ナビゲーション。
+     - 通常結果画面 (#result-screen) : 料金、品質、サービスに特化した推奨プラン、回答まとめ。
+     - 機種変更結果画面 (#device-result-screen) : 推奨端末、買い替えシミュレーション（MNP vs 継続）。
+     - 保存モーダル (#capture-modal) : html2canvasを用いて結果を証明書画像としてダウンロード。
+     - デバッグモーダル (#crew-modal) : 開発/検証用の計算スコア表示ツール。
+  3. 外部ライブラリ・リソースの読み込み
+     - Google Fonts (Noto Sans JP / Quicksand)
+     - html2canvas.js (結果画面の画像キャプチャ保存用)
+     - css/style.css (スタイルシート)
+     - js/script.js (アプリケーションロジック)
+-->
 <!DOCTYPE html>
 <html lang="ja">
 <head>

@@ -1,3 +1,35 @@
+/**
+ * @file script.js
+ * @description モバイルキャリア診断システムのフロントエンド制御・UI制御・診断アルゴリズムの実装
+ * 
+ * 【主な役割・機能】
+ * 1. データの読み込み (loadData)
+ *    - 各種JSONデータ（質問、プラン、割引、端末情報）を非同期でフェッチし、システムを初期化します。
+ * 2. 状態管理 (State Management)
+ *    - ユーザーの現在の進捗状況、選択された回答、アクティブな質問リストなどを管理します。
+ * 3. 画面遷移とUI制御 (UI Control)
+ *    - 「開始画面」「キャリア一覧画面」「質問回答画面」「結果表示画面」「機種推奨画面」の動的な切り替え。
+ * 4. 診断・ロジック計算 (Diagnostic Algorithm)
+ *    - 回答データを元に通信データ量(GB)を割り出し、各キャリアの最適な料金プランと割引を適用し計算。
+ *    - 「料金重視」「品質重視」「サービス重視」の観点から最適キャリアを判定。
+ * 5. 機種推奨と買い替えシミュレーション (Device Recommendation)
+ *    - 機種変更ニーズに合わせた最適端末の選定、他社乗換(MNP)と自社継続の価格比較シミュレーション。
+ * 6. 結果保存・証明書出力 (Certificate Capture)
+ *    - `html2canvas` ライブラリを使用して、診断結果を画像として保存・ダウンロードする機能。
+ * 7. デバッグ用ツール (Crew Debug)
+ *    - 内部ロジックの評価値や計算経過をリアルタイムに確認・表示するデバッグ用モーダル。
+ * 
+ * 【データ連携・ファイル依存】
+ * - data/question.json : 質問データと設問分岐の定義
+ * - data/plans.json    : 各キャリアの料金プランとデータ区分（ティア/フラット）
+ * - data/rules.json    : 各キャリアの家族割、光回線割、カード割引などの計算ロジック
+ * - data/devices.json  : 推奨端末のスペックや特徴データ
+ * - css/style.css      : 画面装飾、デバイス最適化（タブレット・モバイル向け）、アニメーション
+ * 
+ * 【主要な処理フロー】
+ * DOMContentLoaded (初期化) ➔ loadData (データ読込) ➔ 開始画面表示 ➔ 質問回答 (selectOption / branching) ➔ 結果計算 (showResult)
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     // 状態管理
     let questions = [];
@@ -49,15 +81,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 全画面表示トグル
     const fullscreenBtn = document.getElementById('fullscreen-btn');
     if (fullscreenBtn) {
+        // 全画面表示の切り替え
         fullscreenBtn.addEventListener('click', () => {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
                     console.error(`全画面表示エラー: ${err.message}`);
                 });
-                fullscreenBtn.textContent = '📺 元に戻す';
+                fullscreenBtn.textContent = '元に戻す';
             } else {
                 document.exitFullscreen();
-                fullscreenBtn.textContent = '📺 全画面';
+                fullscreenBtn.textContent = '全画面';
             }
         });
     }
@@ -65,7 +98,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // データ読み込み
     async function loadData() {
         try {
+            // データの読み込み開始
             console.log('データを読み込み中...');
+
+            // 複数のJSONファイルを同時にフェッチ
             const [qRes, pRes, rRes, dRes] = await Promise.all([
                 fetch('data/question.json'),
                 fetch('data/plans.json'),
@@ -73,33 +109,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch('data/devices.json')
             ]);
 
+            // すべてのレスポンスが正常かどうかをチェック
             if (!qRes.ok || !pRes.ok || !rRes.ok || !dRes.ok) {
                 throw new Error('一部のデータファイルの読み込みに失敗しました。');
             }
 
+            // JSONデータをパース
             questions = (await qRes.json()).questions;
             plansData = await pRes.json();
             rulesData = await rRes.json();
             devicesData = await dRes.json();
             
+            // データの読み込み完了をログに出力
             console.log('データ読み込み完了:', { questions, plansData, rulesData, devicesData });
             generateCarrierList();
         } catch (error) {
+            // エラーが発生した場合の処理
             console.error('データの読み込みに失敗しました:', error);
             alert('システムの初期化に失敗しました。ページを再読み込みしてください。');
         }
     }
 
     function generateCarrierList() {
+        // キャリアリストの生成
         if (!carrierListContainer) return;
         carrierListContainer.innerHTML = '';
+        
+        // キャリアごとのプランと割引情報を表示
         for (const [key, plans] of Object.entries(plansData)) {
+            // キャリアごとのリストアイテムを作成
             const item = document.createElement('div');
             item.className = `list-item carrier-${key} fade-in`;
             
+            // プラン情報のHTML生成
             let planHtml = '';
             for (const [pName, pInfo] of Object.entries(plans)) {
+                // 最大価格を取得（ティアがある場合は最後のティアの価格を使用）
                 const price = pInfo.tiers ? pInfo.tiers[pInfo.tiers.length - 1].price : pInfo.price;
+                
+                // プラン名と価格を表示
                 planHtml += `
                     <div class="price-item">
                         <span class="price-label">${pName}</span>
@@ -107,15 +155,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>`;
             }
 
+            // 適用可能な割引情報のHTML生成
             let discountHtml = '<ul>';
             const rules = rulesData[key];
             if (rules) {
+                // 割引ルールの名前をリストとして表示
                 for (const r of Object.values(rules)) {
                     if (r && r.name) discountHtml += `<li>${r.name}</li>`;
                 }
             }
             discountHtml += '</ul>';
 
+            // キャリアリストアイテムの内容を設定
             item.innerHTML = `
                 <h3>${getDisplayName(key)}</h3>
                 <div class="list-item-content">
@@ -123,67 +174,87 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="discount-tag-list"><h4>✨ 適用可能な割引</h4>${discountHtml}</div>
                 </div>
             `;
+            // キャリアリストコンテナにアイテムを追加
             carrierListContainer.appendChild(item);
         }
     }
 
     // イベントリスナーの登録
     startBtn.addEventListener('click', () => {
+        // 質問データが読み込まれていない場合の警告
         if (questions.length === 0) {
             alert('データの準備ができていません。しばらくお待ちください。');
             return;
         }
+
+        // 診断開始時の初期化
         startScreen.classList.add('hidden');
         questionContainer.classList.remove('hidden');
         updateActiveQuestions();
         showQuestion();
     });
 
+    // キャリアリスト表示ボタンのイベントリスナー
     showListBtn.addEventListener('click', () => {
         startScreen.classList.add('hidden');
         carrierListScreen.classList.remove('hidden');
     });
 
+    // キャリアリストから戻るボタンのイベントリスナー
     backFromListBtn.addEventListener('click', () => {
         carrierListScreen.classList.add('hidden');
         startScreen.classList.remove('hidden');
     });
 
+    // ホームボタンのイベントリスナー
     homeBtn.addEventListener('click', () => {
         if (confirm('診断を中止して最初に戻りますか？')) location.reload();
     });
 
+    // 乗組員デバッグモーダルの表示
     if (crewDebugBtn) {
+        // 乗組員デバッグボタンのイベントリスナー
         crewDebugBtn.addEventListener('click', () => {
+            // デバッグ情報をレンダリングしてモーダルを表示
             renderCrewDebug();
             crewModal.classList.remove('hidden');
         });
     }
 
+    // 乗組員デバッグトリガーのイベントリスナー
     if (crewDebugTrigger) {
+        // 乗組員デバッグトリガーのクリックイベントでデバッグ情報を表示
         crewDebugTrigger.addEventListener('click', () => {
+            // デバッグ情報をレンダリングしてモーダルを表示
             renderCrewDebug();
             crewModal.classList.remove('hidden');
         });
     }
 
+    // 乗組員デバッグモーダルを閉じるボタンのイベントリスナー
     const closeCrewModal = document.getElementById('close-crew-modal');
     if (closeCrewModal) {
+        // 乗組員デバッグモーダルを閉じるボタンのクリックイベントでモーダルを非表示にする
         closeCrewModal.onclick = () => crewModal.classList.add('hidden');
     }
 
+    // 乗組員デバッグ情報をレンダリングする関数
     function renderCrewDebug() {
+        // デバッグ情報のコンテンツをクリア
         crewDebugContent.innerHTML = '';
         if (Object.keys(crewDebugData).length === 0) {
             crewDebugContent.innerHTML = '<p style="color:white;">診断を完了させると計算詳細が表示されます。</p>';
             return;
         }
 
+        // 各キャリアのデバッグ情報を表示
         for (const [carrierKey, data] of Object.entries(crewDebugData)) {
+            // キャリアごとのブロックを作成
             const block = document.createElement('div');
             block.className = 'crew-carrier-block';
             let discountsHtml = data.appliedDiscounts.map(d => `<div class="crew-discount-item">・${d.name}: -${d.value.toLocaleString()}円</div>`).join('');
 
+            // キャリアごとのデバッグ情報のHTMLを設定
             block.innerHTML = `
                 <div class="crew-carrier-title">${getDisplayName(carrierKey)}</div>
                 <div class="crew-calc-row"><span>プラン:</span> <span>${data.planName}</span></div>
@@ -197,22 +268,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 質問を表示する関数
     function showQuestion() {
+        // 現在の質問IDを取得
         const currentId = activeQuestionIds[currentQuestionIndex];
         const question = questions.find(q => q.id === currentId);
 
+        // 質問が見つからない場合のエラーハンドリング
         if (!question) {
             console.error('質問が見つかりません:', currentId);
             return;
         }
 
+        // 質問タイトルを設定（新規契約の場合は特別なタイトルを使用）
         questionTitle.textContent = (answers.contractType === '新規' && question.titleForNew) ? question.titleForNew : question.title;
         optionsContainer.innerHTML = '';
 
+        // 質問のタイプに応じて入力フィールドまたは選択肢を生成
         if (question.type === 'text') {
+            // テキスト入力用のラッパーを作成
             const wrapper = document.createElement('div');
             wrapper.className = 'text-input-wrapper';
             
+            // テキスト入力フィールドを作成
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'option-btn';
@@ -221,12 +299,14 @@ document.addEventListener('DOMContentLoaded', () => {
             input.style.width = '100%';
             input.style.textAlign = 'center';
             
+            // 次へボタンを作成
             const next = document.createElement('button');
             next.className = 'btn btn-primary';
             next.style.marginTop = '30px';
             next.textContent = '次へ';
             next.onclick = () => selectOption(question.id, input.value || 'お客様');
             
+            // 入力フィールドと次へボタンをラッパーに追加
             wrapper.appendChild(input);
             wrapper.appendChild(next);
             optionsContainer.appendChild(wrapper);
