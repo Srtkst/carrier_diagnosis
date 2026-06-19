@@ -1,27 +1,51 @@
 {
   "最新のiPhoneを使いたい": {
-    "name": "iPhone 17 / 17 Pro",
-    "features": ["最新のA19チップ搭載", "進化したカメラシステム", "超高速5G対応"],
+    "name": "iPhone 17 / 17 Pro / 17 Pro Max",
+    "features": [
+      "最新世代のA19シリーズチップ搭載",
+      "Apple Intelligence対応",
+      "高性能カメラと長時間バッテリー"
+    ],
     "carriers": ["docomo", "au", "SoftBank", "ahamo", "UQ_mobile"]
   },
+
   "iPhoneが良いが、なるべく安く済ませたい": {
-    "name": "iPhone SE (第3世代)",
-    "features": ["使いやすいホームボタン", "コンパクトなサイズ", "手頃な価格"],
-    "carriers": ["docomo", "au", "SoftBank", "UQ_mobile", "Ymobile", "ahamo"]
+    "name": "iPhone 16e",
+    "features": [
+      "現行iPhoneで最も手頃な価格帯",
+      "Apple Intelligence対応",
+      "長期間のOSアップデート"
+    ],
+    "carriers": ["docomo", "au", "SoftBank", "Ymobile", "ahamo", "UQ_mobile"]
   },
+
   "写真や動画を最高にきれいに撮りたい": {
-    "name": "Google Pixel 8 Pro / Galaxy S24 Ultra",
-    "features": ["AIによる画像編集", "強力なズーム機能", "最高峰のディスプレイ"],
+    "name": "Google Pixel 10 Pro / Galaxy S26 Ultra",
+    "features": [
+      "AIによる高度な写真編集",
+      "高倍率ズーム撮影",
+      "フラッグシップ級カメラ性能"
+    ],
     "carriers": ["docomo", "au", "SoftBank"]
   },
+
   "とにかく安くて、普段使いに困らないものが良い": {
-    "name": "Google Pixel 8a / AQUOS wish3",
-    "features": ["高いコストパフォーマンス", "防水・防塵対応", "必要十分なスペック"],
+    "name": "Google Pixel 9a / AQUOS wish5",
+    "features": [
+      "高いコストパフォーマンス",
+      "防水・防塵対応",
+      "SNS・動画視聴・決済用途に十分な性能"
+    ],
     "carriers": ["docomo", "au", "SoftBank", "UQ_mobile", "Ymobile"]
   },
+
   "文字が大きくて、操作が簡単なものが良い": {
-    "name": "らくらくスマートフォン / かんたんスマホ3",
-    "features": ["大きな文字とボタン", "専任オペレーター相談", "聞き取りやすい通話"],
-    "carriers": ["docomo", "au", "SoftBank", "Ymobile"]
+    "name": "らくらくスマートフォン F-53E / かんたんスマホ4",
+    "features": [
+      "大きな文字と見やすい画面",
+      "迷惑電話対策機能",
+      "シンプルで分かりやすい操作"
+    ],
+    "carriers": ["docomo", "SoftBank", "Ymobile"]
   }
 }
